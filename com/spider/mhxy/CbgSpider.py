@@ -10,6 +10,8 @@ from BeautifulSoup import BeautifulSoup
 
 # -----------------------------------------------------------------------------
 # Login in www.***.com.cn
+from com.spider.mhxy import GetAreaInfo
+
 
 def ChinaBiddingLogin(url, username, password):
     # Enable cookie support for urllib2
@@ -30,7 +32,7 @@ def ChinaBiddingLogin(url, username, password):
     urlopener.addheaders.append(('User-Agent',
                                  'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/46.0.2490.86 Safari/537.36'))
 
-    print 'XXX Login......'
+    print 'Login......' + url
 
     '''打开登陆页面'''
     req = urllib2.Request(url)  # req表示向服务器发送请求#
@@ -84,6 +86,8 @@ def ChinaBiddingLogin(url, username, password):
     '''处理页面数据  获取出售列表table'''
     soup = BeautifulSoup(uzip1)
     print soup.findAll(id='soldList')
+
+    return True
     # print BeautifulSoup(soup.findAll(id='soldList')).findAll('tr')
 
 
@@ -114,12 +118,18 @@ def DownloadFile(fileUrl, urlopener):
 
 # ------------------------------------------------------------------------------
 def main():
+    preUrl = 'http://xyq.cbg.163.com/cgi-bin/show_login.py?act=show_login'
     login_page = r'http://xyq.cbg.163.com/cgi-bin/show_login.py?act=show_login&area_id=1&area_name=%E4%B8%8A%E6%B5%B71%E5%8C%BA&server_id=164&server_name=%E5%A4%A9%E9%A9%AC%E5%B1%B1'
-
-    if ChinaBiddingLogin(login_page, '', ''):
-        print '登陆成功'
-    else:
-        print '登陆失败'
+    areaUrlInfo = GetAreaInfo.getAreaInfo()
+    print login_page
+    for i in range(len(areaUrlInfo)):
+        url = preUrl + areaUrlInfo[i]
+        login_page = r''+url+''
+        print login_page
+        if ChinaBiddingLogin(login_page, '', ''):
+            print '爬取数据成功......' + areaUrlInfo[i]
+        else:
+            print '爬取数据失败......' + areaUrlInfo[i]
 
 
 # ------------------------------------------------------------------------------
