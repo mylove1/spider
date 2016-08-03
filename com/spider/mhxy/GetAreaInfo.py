@@ -21,6 +21,7 @@ def getAreaInfo(areaUrl='http://res.xyq.cbg.163.com/js/server_list_data.js'):
         socket.setdefaulttimeout(timeout)  #设置socket默认超时时间，因为urlopen之后的read()操作其实是调用了socket层的某些函数
         response = urllib2.urlopen(req)  # response表示通过调用urlopen并传入req返回响应response#
         the_page = response.read()  # 用read解析获得的HTML文件#
+        response.close()
         content = the_page.decode('gbk')
         areainfo = str(content).split(';')[1].split('=')[1]
         areaJson = json.loads(areainfo)
