@@ -3,6 +3,7 @@
 import os
 import re
 import json
+import socket
 import time
 import random
 import sys
@@ -13,8 +14,11 @@ from BeautifulSoup import BeautifulSoup
 
 def getVideoInfo(url):
     try:
+        timeout = 20
+        socket.setdefaulttimeout(timeout)
         webContent = urllib2.urlopen(url)
         data = webContent.read()
+        webContent.close()
         # 利用BeautifulSoup读取视频列表网页数据
         soup = BeautifulSoup(data)
 
@@ -94,7 +98,8 @@ def youkuDown(link):
 
 
 if __name__ == '__main__':
-    i = 65
-    while(i):
-       youkuDown('http://www.85porn.net/video/'+str(i))
-       i = i+1
+    youkuDown('http://www.85porn.net/video/9004')
+    # i = 65
+    # while(i):
+    #    youkuDown('http://www.85porn.net/video/'+str(i))
+    #    i = i+1
