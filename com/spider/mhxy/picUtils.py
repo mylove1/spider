@@ -1,174 +1,130 @@
-#!usr/bin/env python
-# -*- coding: utf-8 -*-
-import json
+#!/usr/bin/env python
+# -*- coding: UTF-8 -*-
+
 import os
-import random
-import urllib2
-import urllib
-import cookielib
-import xml.etree.ElementTree as ET
+from PIL import Image
+import os, Image
 
-# -----------------------------------------------------------------------------
-# Login in www.***.com.cn
-from BeautifulSoup import BeautifulSoup
-
-from spider.com.spider.utils import Utils
-
-
-def ChinaBiddingLogin(url, username, password):
-    # Enable cookie support for urllib2
-    cookiejar = cookielib.CookieJar()
-    urlopener = urllib2.build_opener(urllib2.HTTPCookieProcessor(cookiejar))
-    urllib2.install_opener(urlopener)
-
-    urlopener.addheaders.append(('Referer',
-                                 'http://xyq.cbg.163.com/cgi-bin/show_login.py?act=show_login&area_id=1&area_name=%E4%B8%8A%E6%B5%B71%E5%8C%BA&server_id=164&server_name=%E5%A4%A9%E9%A9%AC%E5%B1%B1'))
-    urlopener.addheaders.append(
-        ('Accept', 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8'))
-    urlopener.addheaders.append(('Accept-Encoding', 'gzip, deflate, sdch'))
-    urlopener.addheaders.append(('Accept-Language', 'zh-CN,zh;q=0.8'))
-    urlopener.addheaders.append(('Cache-Control', 'max-age=0'))
-    urlopener.addheaders.append(('Connection', 'keep-alive'))
-    urlopener.addheaders.append(('Host', 'xyq.cbg.163.com'))
-    urlopener.addheaders.append(('Upgrade-Insecure-Requests', '1'))
-    urlopener.addheaders.append(('User-Agent',
-                                 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/46.0.2490.86 Safari/537.36'))
-
-    print 'XXX Login......'
-
-    req = urllib2.Request(url)  # req表示向服务器发送请求#
-    response = urllib2.urlopen(req)  # response表示通过调用urlopen并传入req返回响应response#
-    the_page = response.read()  # 用read解析获得的HTML文件#
-    uzip = Utils.unzip(the_page).decode('gbk')
-    print uzip  # 在屏幕上显示出来#
-
-    # soup = BeautifulSoup(uzip)
-    # print soup.find_all('img')
+def a1():
+    # 图像二值处理
+    j=1
+    dir="E:/"
+    path = "E:/py/"
+    for f in os.listdir(dir):
+        if f.endswith(".jpg"):
+            img = Image.open(dir+f) # 读入图片
+            img = img.convert("RGBA")
+            pixdata = img.load()
+            #二值化
+            for y in xrange(img.size[1]):
+                for x in xrange(img.size[0]):
+                    if pixdata[x, y][0] < 90:
+                        pixdata[x, y] = (0, 0, 0, 255)
+            for y in xrange(img.size[1]):
+                for x in xrange(img.size[0]):
+                    if pixdata[x, y][1] < 136:
+                        pixdata[x, y] = (0, 0, 0, 255)
+            for y in xrange(img.size[1]):
+                for x in xrange(img.size[0]):
+                    if pixdata[x, y][2] > 0:
+                        pixdata[x, y] = (255, 255, 255, 255)
+            img.save(path+f, "GIF")
 
 
-
-
-    imgurl = r'http://xyq.cbg.163.com/cgi-bin/show_captcha.py?stamp=' + str(random.random())
-    DownloadFile(imgurl, urlopener)
-    authcode = raw_input('Please enter the authcode:')
-    # authcode=VerifyingCodeRecognization(r"http://192.168.0.106/images/code.jpg")
+def a2():
+    # 图像分割
+    j = 1
+    dir = "E:/py/"
+    for f in os.listdir(dir):
+        if f.endswith(".jpg"):
+            img = Image.open(dir + f)
+            for i in range(5):
+                x = 8 + i * 25  # 这里的数字参数需要自己
+                y = 6  # 根据验证码图片的像素进行
+                img.crop((x, y, x + 25, y + 32)).save("E:/py/fonts/%d.gif" % j)  # 适当的修改
+                print "j=", j
+                j += 1
 
 
 
 
 
+def binary(f):                #图像的二值化处理
+    print f
+    img = Image.open(f)
+    #img = img.convert('1')
+    img = img.convert("RGBA")  #参考文章中无该行，无该行，我这里会报错
+    pixdata = img.load()
+    for y in xrange(img.size[1]):
+        for x in xrange(img.size[0]):
+            if pixdata[x, y][0] < 90:
+                pixdata[x, y] = (0, 0, 0, 255)
+    for y in xrange(img.size[1]):
+        for x in xrange(img.size[0]):
+            if pixdata[x, y][1] < 136:
+                pixdata[x, y] = (0, 0, 0, 255)
+    for y in xrange(img.size[1]):
+        for x in xrange(img.size[0]):
+            if pixdata[x, y][2] > 0:
+                pixdata[x, y] = (255, 255, 255, 255)
+    return img
+nume = 0
+
+
+def division(img):		#图像的分割，就是验证码按字符分割出来
+    global nume
+    font=[]
+    for i in range(4):
+        x=16+i*15		#该函数中的像素值都需要自己进行微调
+        y=2
+        temp = img.crop((x,y,x+7,y+10))
+        temp.save("./temp/%d.gif" % nume)
+        nume=nume+1
+        font.append(temp)
+    return font
+
+
+def recognize(img):		#分隔出来的字符与预先定义的字体库中的结果逐个像素进行对比找出差别最小的项
+
+    fontMods = []
+    for i in range(10):
+        fontMods.append((str(i), Image.open("./num/%d.gif" % i)))
+    result=""
+    font=division(img)
+    for i in font:
+        target=i
+        points = []
+        for mod in fontMods:
+            diffs = 0
+            for yi in range(10):
+                for xi in range(7):  #以下多行为自己修改，参考文章中的值对比存在问题
+                    #print "mod[1].getpixel((xi, yi)):"+str(mod[1].getpixel((xi, yi)))
+                    #print "target.getpixel((xi, yi)):"+str(target.getpixel((xi, yi)))
+                    if 0 in target.getpixel((xi, yi)):
+                        compare = 0
+                    else:
+                        compare = 255
+                    if mod[1].getpixel((xi, yi)) != compare:
+                        diffs += 1
+            print "diffs：" + str(diffs)
+            points.append((diffs, mod[0]))
+        points.sort()
+        result += points[0][1]
+    return result
+if __name__ == '__main__':
+    codedir="./pic/"
+    for imgfile in os.listdir(codedir):
+        if imgfile.endswith(".gif"):
+            dir="./result/"
+            img=binary(codedir+imgfile)
+            num=recognize(img)
+            dir += (num+".gif")
+            print "save to", dir
+            img.save(dir)
 
 
 
-    loginUrl = 'http://xyq.cbg.163.com/cgi-bin/login.py'
-    values = {"act": "do_anon_auth",
-              "image_value": authcode,
-              "server_id": "164",
-              "server_name": "%E4%B8%8A%E6%B5%B71%E5%8C%BA",
-              "next_url": "/cgi-bin/query.py?&amp;act=query&amp;server_id=164"}
-    postData = urllib.urlencode(values)
-
-    # 创建请求对象
-    req = urllib2.Request(url=loginUrl, data=postData)
-    # 获得服务器返回的数据
-    response = urlopener.open(req)
-    # 处理数据
-    page = response.read()
-    # 输出页面数据
-    print(Utils.unzip(page).decode('gbk'))
-
-    req1 = urllib2.Request(url='http://xyq.cbg.163.com/cgi-bin/query.py?&act=query&server_id=164')
-    response1 = urllib2.urlopen(req1)  # response表示通过调用urlopen并传入req返回响应response#
-    the_page1 = response1.read()  # 用read解析获得的HTML文件#
-    uzip1 = Utils.unzip(the_page1).decode('gbk')
-    print uzip1  # 在屏幕上显示出来#
-
-
-# -----------------------------------------------------------------------------
-# Download from fileUrl then save to fileToSave
-# Note: the fileUrl must be a valid file
-def DownloadFile(fileUrl, urlopener):
-    isDownOk = False
-
-    try:
-        if fileUrl:
-            picture = urlopener.open(fileUrl).read()
-            # 保存验证码到本地
-            local = open('e:/code.jpg', 'wb')
-            local.write(picture)
-            local.close()
-
-            isDownOK = True
-        else:
-            print 'ERROR: fileUrl is NULL!'
-    except:
-        isDownOK = False
-
-    return isDownOK
-
-
-# ------------------------------------------------------------------------------
-# Verifying code recoginization
-def VerifyingCodeRecognization(imgurl):
-    url = r'http://192.168.0.119:800/api?'
-    user = 'admin'
-    pwd = 'admin'
-    model = 'ocr'
-    ocrfile = 'cbi'
-
-    values = {'user': user, 'pwd': pwd, 'model': model, 'ocrfile': ocrfile, 'imgurl': imgurl}
-    data = urllib.urlencode(values)
-
-    try:
-        url += data
-        urlcontent = urllib2.urlopen(url)
-    except IOError:
-        print '***ERROR: invalid URL (%s)' % url
-
-    page = urlcontent.read(500000)
-
-    # Parse the xml data and get the verifying code
-    root = ET.fromstring(page)
-    node_find = root.find('AddField')
-    authcode = node_find.attrib['data']
-
-    return authcode
-
-
-# ------------------------------------------------------------------------------
-# Read users from configure file
-def ReadUsersFromFile(filename):
-    users = {}
-    for eachLine in open(filename, 'r'):
-        info = [w for w in eachLine.strip().split()]
-        if len(info) == 2:
-            users[info[0]] = info[1]
-
-    return users
-
-
-# ------------------------------------------------------------------------------
-def main():
-    login_page = r'http://xyq.cbg.163.com/cgi-bin/show_login.py?act=show_login&area_id=1&area_name=%E4%B8%8A%E6%B5%B71%E5%8C%BA&server_id=164&server_name=%E5%A4%A9%E9%A9%AC%E5%B1%B1'
-
-    if ChinaBiddingLogin(login_page, '', ''):
-        # for i in range(3):
-        #     pageUrl = download_page + '%d' % now_id
-        #     urlcontent = urllib2.urlopen(pageUrl)
-        #
-        #     filepath = './download/%s.html' % now_id
-        #     f = open(filepath, 'w')
-        #     f.write(urlcontent.read(500000))
-        #     f.close()
-        #
-        #     now_id += 1
-        print '登陆成功'
-    else:
-        print '登陆失败'
-
-
-# ------------------------------------------------------------------------------
 
 
 if __name__ == '__main__':
-    main()
+    a2()
