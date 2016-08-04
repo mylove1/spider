@@ -10,6 +10,7 @@ import sys
 import urllib2
 
 from BeautifulSoup import BeautifulSoup
+from pip._vendor import requests
 
 
 def getVideoInfo(url):
@@ -99,6 +100,8 @@ def youkuDown(link):
 
 if __name__ == '__main__':
     youkuDown('http://www.85porn.net/video/9004')
+    f = requests.get('http://www.85porn.net/video/9004')
+    print f
     # i = 65
     # while(i):
     #    youkuDown('http://www.85porn.net/video/'+str(i))
