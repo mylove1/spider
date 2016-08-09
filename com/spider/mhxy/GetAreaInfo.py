@@ -5,8 +5,13 @@ import os
 import socket
 import urllib
 import urllib2
+
+import time
+
 import FileUtils
 import sys
+
+from com.spider.mhxy import zipUtils
 
 reload(sys)
 
@@ -17,10 +22,19 @@ def getAreaInfo(areaUrl='http://res.xyq.cbg.163.com/js/server_list_data.js'):
     try:
         '''打开登陆页面'''
         req = urllib2.Request(areaUrl)  # req表示向服务器发送请求#
+        req.add_header('Accept','text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8')
+        req.add_header('Accept-Encoding','gzip, deflate, sdch')
+        req.add_header('Accept-Language','zh-CN,zh;q=0.8')
+        req.add_header('Cookie','usertrack=c+5+hVehU4eJ0yY1vv0FAg==; _ntes_nnid=22e4476650c2a2f0cd04b9a4ef848bed,1470190472958; _ntes_nuid=22e4476650c2a2f0cd04b9a4ef848bed; Province=010; City=010; _ga=GA1.2.2091206241.1470190482')
+        req.add_header('Host','res.xyq.cbg.163.com')
+        req.add_header('Proxy-Connection','keep-alive')
+        req.add_header('Upgrade-Insecure-Requests','1')
+        req.add_header('User-Agent','Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/46.0.2490.86 Safari/537.36')
         timeout = 20  #
         socket.setdefaulttimeout(timeout)  #设置socket默认超时时间，因为urlopen之后的read()操作其实是调用了socket层的某些函数
+        time.sleep(10)
         response = urllib2.urlopen(req)  # response表示通过调用urlopen并传入req返回响应response#
-        the_page = response.read()  # 用read解析获得的HTML文件#
+        the_page = zipUtils.unzip(response.read())  # 用read解析获得的HTML文件#
         response.close()
         content = the_page.decode('gbk')
         areainfo = str(content).split(';')[1].split('=')[1]
