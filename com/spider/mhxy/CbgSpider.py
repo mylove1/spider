@@ -10,10 +10,10 @@ from BeautifulSoup import BeautifulSoup
 
 # -----------------------------------------------------------------------------
 # Login in www.***.com.cn
-from com.spider.mhxy import GetAreaInfo
+import GetAreaInfo
 
 
-def ChinaBiddingLogin(url, username, password):
+def ChinaBiddingLogin(url, serverId, serverName):
     # Enable cookie support for urllib2
     cookiejar = cookielib.CookieJar()
     urlopener = urllib2.build_opener(urllib2.HTTPCookieProcessor(cookiejar))
@@ -61,9 +61,9 @@ def ChinaBiddingLogin(url, username, password):
     loginUrl = 'http://xyq.cbg.163.com/cgi-bin/login.py'
     values = {"act": "do_anon_auth",
               "image_value": authcode,
-              "server_id": "164",
-              "server_name": "%E4%B8%8A%E6%B5%B71%E5%8C%BA",
-              "next_url": "/cgi-bin/query.py?&amp;act=query&amp;server_id=164"}
+              "server_id": serverId,
+              "server_name": serverName,
+              "next_url": "/cgi-bin/query.py?&amp;act=query&amp;server_id="+serverId}
     postData = urllib.urlencode(values)
 
     # 创建请求对象
@@ -126,7 +126,7 @@ def main():
         url = preUrl + areaUrlInfo[i]
         login_page = r''+url+''
         print login_page
-        if ChinaBiddingLogin(login_page, '', ''):
+        if ChinaBiddingLogin(login_page, areaUrlInfo[i].split('&')[3].split('=')[1],areaUrlInfo[i].split('&')[4].split('=')[1]):
             print '爬取数据成功......' + areaUrlInfo[i]
         else:
             print '爬取数据失败......' + areaUrlInfo[i]

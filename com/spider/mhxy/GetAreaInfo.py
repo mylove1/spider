@@ -11,7 +11,7 @@ import time
 import FileUtils
 import sys
 
-from com.spider.mhxy import zipUtils
+import zipUtils
 
 reload(sys)
 
