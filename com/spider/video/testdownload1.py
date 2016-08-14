@@ -1,5 +1,6 @@
 #!usr/bin/env python
 # -*- coding: utf-8 -*-
+import cookielib
 import os
 import re
 import json
@@ -10,29 +11,48 @@ import sys
 import urllib2
 
 from BeautifulSoup import BeautifulSoup
+from pip._vendor import requests
 
 
 def getVideoInfo(url):
-    try:
-        timeout = 20
-        socket.setdefaulttimeout(timeout)
-        webContent = urllib2.urlopen(url)
-        data = webContent.read()
-        webContent.close()
-        # 利用BeautifulSoup读取视频列表网页数据
-        soup = BeautifulSoup(data)
+    timeout = 200
+    socket.setdefaulttimeout(timeout)
+    sleep_download_time = 2
+    time.sleep(sleep_download_time)
 
-        #获取videl url
-        videoSource = soup.findAll('source')
-        videoUrl = ''
-        for singleRes in videoSource:
-            videoUrl =  singleRes['src']  # 依次取出不同匹配内容
+    headers = {
+    'Accept':'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+    'Accept-Encoding':'gzip, deflate, sdch',
+    'Accept-Language':'zh-CN,zh;q=0.8',
+    'Cache-Control':'max-age=0',
+    'Proxy-Connection':'keep-alive',
+    'Host':'www.85porn.net',
+    'Upgrade-Insecure-Requests':'1',
+    'User-Agent':'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.82 Safari/537.36'
+    }
 
-            #获取video title
-        title = soup.findAll('h4',{'class':'visible-xs big-title-truncate m-t-0'})[0].string
-        return videoUrl,title
-    except:
-        pass
+
+
+
+    # request = urllib2.Request(url,headers=headers)
+    request = urllib2.Request(url)
+    # webContent = urllib2.urlopen(request)
+    webContent = requests.get(url)
+    data = webContent.read()
+    webContent.close()
+    # 利用BeautifulSoup读取视频列表网页数据
+    soup = BeautifulSoup(data)
+
+    #获取videl url
+    videoSource = soup.findAll('source')
+    videoUrl = ''
+    for singleRes in videoSource:
+        videoUrl =  singleRes['src']  # 依次取出不同匹配内容
+
+        #获取video title
+    title = soup.findAll('h4',{'class':'visible-xs big-title-truncate m-t-0'})[0].string
+    return videoUrl,title
+
 
 
 def getTrueLink(videoid):
@@ -92,13 +112,16 @@ def youkuDown(link):
         if os.path.exists(dir):
             return
         down2file(videoUrl, dir+title + '.mp4')
-    except:
-        print link+'download Failed !'
+    except urllib2.URLError, e:
+        print e
+        print link + ' download Failed !'
         pass
 
 
 if __name__ == '__main__':
-    youkuDown('http://www.85porn.net/video/9004')
+    title = requests.get('http://www.85porn.net/video/10243')
+    print title
+    # youkuDown('http://www.85porn.net/video/32')
     # i = 65
     # while(i):
     #    youkuDown('http://www.85porn.net/video/'+str(i))
